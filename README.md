@@ -7,15 +7,19 @@ SpotHome/
 ├── cmd/
 │   └── main.go         # Point d'entrée de l'application
 ├── internal/
+│   │
 │   ├── domain/         # Entités et règles métier
 │   │   └── product.go  # Entité Product et interfaces des ports
-│   ├── usecase/        # Cas d'utilisation : logique métier
-│   │   └── product_service.go
+│   │
+│   ├── interactors/        # Cas d'utilisation : logique métier
+│   │   └── product_interactors.go
+│   │
 │   ├── adapters/       # Adaptateurs : implémentations des ports
 │   │   ├── http/
-│   │   │   └── product_handler.go
+│   │   │   └── product_handler.go       # Définition des routes http(s)
 │   │   └── db/
-│   │       └── product_repository.go
+│   │       └── product_repository.go       # Repo des contrats en DB
+│   │
 │   └── ports/          # Ports : interfaces définissant les contrats
 │       └── product_repository.go
 └── go.mod
@@ -23,6 +27,15 @@ SpotHome/
 
 ## Commands line utils
 
+
+General command
 ```bash
 git clone git@github.com:YohanADR/SpotHome.git
+```
+
+Make commands 
+```bash
+make go-createC     # Création des différentes class nécessaire à l'architecture
+
+make go-cleanC      # Suppréssion des class dans l'architecture
 ```
