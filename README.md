@@ -19,9 +19,10 @@ SpotHome/
 │   └── ports/          # Ports : interfaces définissant les contrats
 │       └── product_repository.go
 └── go.mod
-
+```
 
 ## Commands line utils
 
 ```bash
 git clone git@github.com:YohanADR/SpotHome.git
+```
