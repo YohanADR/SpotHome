@@ -1,0 +1,16 @@
+# Ignorer tous les fichiers .env dans le dossier infrastructure/config
+internal/infrastructure/config/.env
+
+# Ignorer tous les fichiers config.yaml dans le dossier infrastructure/config
+internal/infrastructure/config/config.yaml
+
+# Autres fichiers et dossiers à ignorer
+*.log
+*.out
+*.exe
+*.tmp
+*.swp
+vendor/
+bin/
+build/
+.DS_Store
