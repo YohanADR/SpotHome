@@ -4,6 +4,7 @@
 
 ```bash
 SpotHome/
+├── bin/    # binaire de l'application
 ├── cmd/
 │   └── main.go         # Point d'entrée de l'application
 ├── internal/
