@@ -20,6 +20,7 @@ type Config struct {
 	DB_SSLMODE  string
 	REDIS_HOST  string
 	REDIS_PORT  int
+	REDIS_DB    int
 }
 
 // LoadCharge le fichier .env et retourne la configuration
@@ -31,6 +32,7 @@ func Load(log logger.Logger) *Config {
 
 	dbPort, _ := strconv.Atoi(getEnv("DB_PORT", "5432"))       // Valeur par défaut pour le port
 	redisPort, _ := strconv.Atoi(getEnv("REDIS_PORT", "6379")) // Valeur par défaut pour le port
+	redisDb, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))        // Valeur par défaut pour le port
 
 	return &Config{
 		Port:        getEnv("PORT", "8080"),
@@ -43,6 +45,7 @@ func Load(log logger.Logger) *Config {
 		DB_SSLMODE:  getEnv("DB_SSLMODE", "disable"),
 		REDIS_HOST:  getEnv("REDIS_HOST", "redis"),
 		REDIS_PORT:  redisPort,
+		REDIS_DB:    redisDb,
 	}
 }
 
