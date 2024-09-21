@@ -11,6 +11,13 @@ internal/infrastructure/config/config.yaml
 *.tmp
 *.swp
 vendor/
-bin/
+
+# Ignorer tous les fichiers dans bin/, mais pas le dossier ni .gitkeep
+bin/*
+!bin/.gitkeep
+
+# Ignorer tous les fichiers dans build/
 build/
+
+# Système
 .DS_Store

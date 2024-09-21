@@ -32,3 +32,8 @@ go-cleanC:
 	echo "Suppression du dossier parent $$CLASS_NAME_UPPER"; \
 	rm -rf internal/$$CLASS_NAME_UPPER; \
 	echo "Fichiers et dossier supprimés"
+
+# Build de l'application 
+.PHONY: build
+build:
+    go build -o bin/spotHome cmd/main.go
