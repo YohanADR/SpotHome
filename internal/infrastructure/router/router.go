@@ -1,6 +1,9 @@
 package router
 
 import (
+	postgisPort "SpotHome/internal/infrastructure/postgis/ports"
+	redisPort "SpotHome/internal/infrastructure/redis/ports"
+	userHandler "SpotHome/internal/user/adapters/http"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -19,8 +22,9 @@ func NewRouter() *Router {
 }
 
 // RegisterRoutes enregistre les routes de l'application
-func (r *Router) RegisterRoutes() {
+func (r *Router) RegisterRoutes(postgres postgisPort.PostGISPort, redis redisPort.RedisPort) {
 	r.mux.HandleFunc("/api/example", ExampleHandler).Methods("GET")
+	r.mux.HandleFunc("/api/user", userHandler.GetUserHandler(postgres, redis)).Methods("GET")
 	// Ajoute d'autres routes ici
 }
 

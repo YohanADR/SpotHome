@@ -28,8 +28,8 @@ func main() {
 	}
 	defer redisAdapter.Close()
 
-	defer log.Sync()   // assure d'écrire les logs avant de quitter
-	r.RegisterRoutes() // Enregistre les routes
+	defer log.Sync()                   // assure d'écrire les logs avant de quitter
+	r.RegisterRoutes(pg, redisAdapter) // Enregistre les routes
 
 	log.Info("Démarrage de l'application en mode", logger.FieldString("Environment", cfg.Environment))
 	http_server.StartServer(cfg, r, log) // Démarrage du serveur HTTP

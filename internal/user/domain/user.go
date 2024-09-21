@@ -1,4 +1,7 @@
 package domain
 
-// user entity definition
-
+type User struct {
+	ID    int
+	Name  string
+	Email string
+}

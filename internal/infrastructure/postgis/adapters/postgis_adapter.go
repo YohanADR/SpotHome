@@ -3,10 +3,12 @@ package adapters
 import (
 	"SpotHome/internal/infrastructure/config"
 	"SpotHome/internal/infrastructure/postgis/ports"
+	"SpotHome/internal/user/domain"
 
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -24,18 +26,31 @@ func NewPostGISAdapter(cfg *config.Config) (ports.PostGISPort, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %v", err)
 	}
-
 	return &PostGISAdapter{pool: pool}, nil
 }
 
-// Query exécute une requête sur la base de données
 func (p *PostGISAdapter) Query(query string, args ...interface{}) (interface{}, error) {
-	row := p.pool.QueryRow(context.Background(), query, args...)
-	var result interface{}
-	if err := row.Scan(&result); err != nil {
+	rows, err := p.pool.Query(context.Background(), query, args...)
+	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	defer rows.Close()
+
+	// Process rows and return results
+	var results []domain.User // Adjust based on your actual result type
+	for rows.Next() {
+		var user domain.User                                                 // Using the User struct
+		if err := rows.Scan(&user.ID, &user.Name, &user.Email); err != nil { // Adjust based on your result fields
+			return nil, err
+		}
+		results = append(results, user)
+	}
+	return results, nil
+}
+
+// QueryRow exécute une requête SQL et retourne un pgx.Row
+func (p *PostGISAdapter) QueryRow(query string, args ...interface{}) pgx.Row {
+	return p.pool.QueryRow(context.Background(), query, args...)
 }
 
 // Close ferme la connexion à la base de données
