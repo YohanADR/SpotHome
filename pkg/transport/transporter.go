@@ -1,10 +1,13 @@
 package transport
 
-// HandlerFunc est un type abstrait de fonction pour gérer des requêtes (peut être implémenté par Gin, Echo, etc.)
-type HandlerFunc func(method string, path string, handlerFunc interface{})
+import "net/http"
 
-// Transporter interface abstrait la couche de transport (Gin, HTTP, etc.)
+// RouteRegistrar est un type pour l'enregistrement de routes abstrait
+type RouteRegistrar func(method, path string, handler http.HandlerFunc)
+
+// Transporter est une interface générique pour tout type de serveur HTTP
 type Transporter interface {
-	Start() error
-	RegisterRoutes(registerFunc func(HandlerFunc)) // Méthode abstraite pour enregistrer des routes
+	http.Handler                         // Respecte l'interface http.Handler
+	Start() error                        // Méthode pour démarrer le serveur HTTP
+	RegisterRoutes(func(RouteRegistrar)) // Enregistrement des routes via un RouteRegistrar abstrait
 }

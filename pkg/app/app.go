@@ -1,6 +1,8 @@
 package app
 
 import (
+	"net/http"
+
 	"github.com/YohanADR/SpotHome/infrastructure/config"
 	"github.com/YohanADR/SpotHome/infrastructure/db/postgis"
 	"github.com/YohanADR/SpotHome/infrastructure/db/redis"
@@ -8,7 +10,6 @@ import (
 	"github.com/YohanADR/SpotHome/infrastructure/messaging/kafka"
 	"github.com/YohanADR/SpotHome/infrastructure/server/router"
 	"github.com/YohanADR/SpotHome/pkg/transport"
-	"github.com/gin-gonic/gin"
 )
 
 // Application struct contient les services principaux
@@ -48,10 +49,10 @@ func InitApp() (*Application, error) {
 		return nil, err
 	}
 
-	// Initialiser le transport HTTP avec Gin
+	// Initialiser le transport HTTP (Gin ou un autre HTTPHandler)
 	transporter := transport.NewGinTransport(":"+cfg.Server.Port, log)
 
-	// Initialiser le routeur
+	// Initialiser le routeur avec le transport HTTP générique
 	appRouter := router.NewRouter(transporter, log)
 
 	// Enregistrement des routes
@@ -104,9 +105,11 @@ func initKafka(cfg *config.Config, log logger.Logger) (*kafka.KafkaProducer, err
 
 // Register les routes
 func registerRoutes(appRouter *router.Router) {
-	appRouter.RegisterRoutes(func(register transport.HandlerFunc) {
-		register("GET", "/health", func(c *gin.Context) {
-			c.JSON(200, gin.H{"message": "OK"})
+	appRouter.RegisterRoutes(func(register transport.RouteRegistrar) {
+		// Enregistrement d'une route HTTP avec un handler générique
+		register("GET", "/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"message": "OK"}`))
 		})
 	})
 }

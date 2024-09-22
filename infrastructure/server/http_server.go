@@ -5,23 +5,23 @@ import (
 
 	"github.com/YohanADR/SpotHome/infrastructure/config"
 	"github.com/YohanADR/SpotHome/infrastructure/logger"
-	"github.com/gin-gonic/gin"
+	"github.com/YohanADR/SpotHome/pkg/transport"
 )
 
 type HTTPServer struct {
-	Engine *gin.Engine
-	Addr   string
-	Logger logger.Logger
-	Config config.ServerConfig
+	Handler transport.HTTPHandler // Utilise l'interface HTTPHandler
+	Addr    string
+	Logger  logger.Logger
+	Config  config.ServerConfig
 }
 
-// NewHTTPServer initialise un nouveau serveur HTTP avec le moteur Gin et la configuration
-func NewHTTPServer(cfg config.ServerConfig, engine *gin.Engine, log logger.Logger) *HTTPServer {
+// NewHTTPServer initialise un nouveau serveur HTTP avec un handler générique
+func NewHTTPServer(cfg config.ServerConfig, handler transport.HTTPHandler, log logger.Logger) *HTTPServer {
 	return &HTTPServer{
-		Engine: engine,
-		Addr:   ":" + cfg.Port,
-		Logger: log,
-		Config: cfg,
+		Handler: handler,
+		Addr:    ":" + cfg.Port,
+		Logger:  log,
+		Config:  cfg,
 	}
 }
 
@@ -32,7 +32,7 @@ func (s *HTTPServer) Start() error {
 	// Configuration du serveur HTTP
 	srv := &http.Server{
 		Addr:           s.Addr,
-		Handler:        s.Engine,
+		Handler:        s.Handler, // Utilise l'interface HTTPHandler
 		ReadTimeout:    s.Config.ReadTimeout,
 		WriteTimeout:   s.Config.WriteTimeout,
 		MaxHeaderBytes: s.Config.MaxHeaderBytes,
