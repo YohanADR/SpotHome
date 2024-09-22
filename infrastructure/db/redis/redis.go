@@ -2,10 +2,10 @@ package redis
 
 import (
 	"context"
-	"time"
 
 	"github.com/YohanADR/SpotHome/infrastructure/config"
-	"github.com/YohanADR/SpotHome/pkg/logger"
+	"github.com/YohanADR/SpotHome/infrastructure/logger"
+	"github.com/YohanADR/SpotHome/pkg/cache"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -16,6 +16,9 @@ type RedisClient struct {
 	Client *redis.Client
 	Logger logger.Logger
 }
+
+// Vérification que RedisClient implémente bien l'interface Cache
+var _ cache.Cache = (*RedisClient)(nil)
 
 // NewRedisClient initialise une connexion Redis en utilisant les configurations
 func NewRedisClient(cfg config.RedisConfig, log logger.Logger) *RedisClient {
@@ -41,8 +44,8 @@ func NewRedisClient(cfg config.RedisConfig, log logger.Logger) *RedisClient {
 	}
 }
 
-// Get récupère une valeur dans Redis
-func (r *RedisClient) Get(key string) (string, error) {
+// Get récupère une valeur dans Redis (implémente Cache)
+func (r *RedisClient) Get(key string) (interface{}, error) {
 	result, err := r.Client.Get(ctx, key).Result()
 	if err == redis.Nil {
 		r.Logger.Info("Clé non trouvée", "key", key)
@@ -55,9 +58,9 @@ func (r *RedisClient) Get(key string) (string, error) {
 	return result, nil
 }
 
-// Set stocke une valeur dans Redis
-func (r *RedisClient) Set(key string, value string, expiration time.Duration) error {
-	err := r.Client.Set(ctx, key, value, expiration).Err()
+// Set stocke une valeur dans Redis (implémente Cache)
+func (r *RedisClient) Set(key string, value interface{}) error {
+	err := r.Client.Set(ctx, key, value, 0).Err() // expiration par défaut à 0
 	if err != nil {
 		r.Logger.Error("Erreur lors de l'enregistrement de la clé", "error", err, "key", key)
 		return err
@@ -66,11 +69,23 @@ func (r *RedisClient) Set(key string, value string, expiration time.Duration) er
 	return nil
 }
 
-// Close ferme la connexion Redis
-func (r *RedisClient) Close() {
+// Delete supprime une clé dans Redis (implémente Cache)
+func (r *RedisClient) Delete(key string) error {
+	err := r.Client.Del(ctx, key).Err()
+	if err != nil {
+		r.Logger.Error("Erreur lors de la suppression de la clé", "error", err, "key", key)
+		return err
+	}
+	r.Logger.Info("Clé supprimée avec succès", "key", key)
+	return nil
+}
+
+// Close ferme la connexion Redis (implémente Cache)
+func (r *RedisClient) Close() error {
 	if err := r.Client.Close(); err != nil {
 		r.Logger.Error("Erreur lors de la fermeture de la connexion Redis", "error", err)
-	} else {
-		r.Logger.Info("Connexion Redis fermée avec succès")
+		return err
 	}
+	r.Logger.Info("Connexion Redis fermée avec succès")
+	return nil
 }

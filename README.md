@@ -60,9 +60,9 @@ git clone git@github.com:YohanADR/SpotHome.git
 
 Make commands 
 ```bash
-make go-createC     # Création des différentes class nécessaire à l'architecture
+make create     # Création des différentes class nécessaire à l'architecture
 ```
 
 ```bash
-make go-cleanC      # Suppréssion des class dans l'architecture
+make clean     # Suppréssion des class dans l'architecture
 ```

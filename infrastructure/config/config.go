@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	"github.com/YohanADR/SpotHome/pkg/logger"
+	"github.com/YohanADR/SpotHome/infrastructure/logger"
 	"github.com/spf13/viper"
 )
 
@@ -12,14 +12,16 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	Redis    RedisConfig
+	Kafka    KafkaConfig
 }
 
 // ServerConfig contient les configurations du serveur HTTP
 type ServerConfig struct {
-	Port         string        `mapstructure:"port"`
-	Environment  string        `mapstructure:"environment"`
-	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
-	WriteTimeout time.Duration `mapstructure:"write_timeout"`
+	Port           string        `mapstructure:"port"`
+	Environment    string        `mapstructure:"environment"`
+	ReadTimeout    time.Duration `mapstructure:"read_timeout"`
+	WriteTimeout   time.Duration `mapstructure:"write_timeout"`
+	MaxHeaderBytes int           `mapstructure:"max_header_bytes"`
 }
 
 // DatabaseConfig contient les informations de connexion à la base de données
@@ -37,6 +39,12 @@ type RedisConfig struct {
 	Host string `mapstructure:"host"`
 	Port string `mapstructure:"port"`
 	DB   int    `mapstructure:"db"`
+}
+
+// KafkaConfig contient les informations pour Kafka
+type KafkaConfig struct {
+	Brokers []string `mapstructure:"brokers"`
+	Topic   string   `mapstructure:"topic"`
 }
 
 // LoadConfig lit les configurations depuis le fichier .yaml
