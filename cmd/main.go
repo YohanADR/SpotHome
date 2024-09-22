@@ -7,12 +7,14 @@ import (
 )
 
 func main() {
-	// Initialisation de l'application (config + logger)
+	// Initialisation de l'application
 	application, err := app.InitApp()
 	if err != nil {
 		panic("Échec de l'initialisation de l'application")
 	}
 	defer logger.ShutdownLogger(application.Logger)
+	defer application.RedisClient.Close()
+	defer application.PostGISClient.Close()
 
 	// Démarrage du serveur HTTP
 	httpServer := server.NewHTTPServer(application.Config.Server, application.Logger)

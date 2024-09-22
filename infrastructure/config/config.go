@@ -28,14 +28,14 @@ type DatabaseConfig struct {
 	Password string `mapstructure:"password"`
 	Name     string `mapstructure:"name"`
 	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
+	Port     string `mapstructure:"port"`
 	SSLMode  string `mapstructure:"sslmode"`
 }
 
 // RedisConfig contient les informations de connexion à Redis
 type RedisConfig struct {
 	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Port string `mapstructure:"port"`
 	DB   int    `mapstructure:"db"`
 }
 
