@@ -1,8 +1,8 @@
 # Ignorer tous les fichiers .env
-/.env
+.env
 
 # Ignorer tous les fichiers config.yaml dans le dossier infrastructure/config
-internal/infrastructure/config/config.yaml
+/infrastructure/config/config.yaml
 
 # Autres fichiers et dossiers à ignorer
 *.log

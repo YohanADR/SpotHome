@@ -4,31 +4,49 @@
 
 ```bash
 SpotHome/
-├── bin/    # binaire de l'application
+├── bin/                             # Binaire de l'application
 ├── cmd/
-│   └── main.go         # Point d'entrée de l'application
+│   └── main.go                      # Point d'entrée de l'application
 ├── internal/
-│   │
-│   ├── PARENTCLASS/           # Dossier parent pour la classe 
-│   │   ├── domain/     # Entités et règles métier
-│   │   │   └── example.go # Entité example et interfaces des ports
+│   ├── listing/                     # Contexte ou module métier (ex : gestion des annonces)
+│   │   ├── domain/                  # Couche Domaine (Business Logic)
+│   │   │   ├── listing.go           # Entité "Listing" et interfaces des ports
+│   │   │   ├── listing_service.go   # Interface du service métier (Ports côté application)
 │   │   │
-│   │   ├── events/     # Définition des événements (bus de message/connection avec d'autres contexte )
+│   │   ├── events/                  # Gestion des événements (optionnel, si on implémente des Event Sourcing ou CQRS)
+│   │   │   └── listing_events.go    # Définition des événements
 │   │   │
-│   │   ├── interactors/ # Cas d'utilisation : logique métier
-│   │   │   └── example_interactor.go
+│   │   ├── usecases/                # Cas d'utilisation (Application Logic)
+│   │   │   └── listing_interactor.go # Logique métier, appels aux ports côté domaine
 │   │   │
-│   │   ├── adapters/   # Adaptateurs : implémentations des ports
+│   │   ├── adapters/                # Adaptateurs (Ports implémentés côté infrastructure)
 │   │   │   ├── http/
-│   │   │   │   └── example_handler.go       # Définition des routes http(s)
-│   │   │   └── db/
-│   │   │       └── example_repository.go     # Repo des contrats en DB
+│   │   │   │   └── listing_handler.go  # Gestion des routes HTTP avec Gin
+│   │   │   ├── db/
+│   │   │   │   └── listing_repository.go # Gestion des accès à la base de données (Ex : via GORM)
+│   │   │   └── messaging/           # Adaptateurs pour la communication (ex : message queue)
+│   │   │       └── kafka_publisher.go
 │   │   │
-│   │   └── ports/    # Ports : interfaces définissant les contrats
-│   │       └── example_repository.go
+│   │   └── ports/                   # Interfaces pour définir les contrats
+│   │       ├── repository.go        # Interface du repository pour les annonces
+│   │       └── service.go           # Interface pour les services métiers (implémentés dans les "usecases")
 │   │
-│   ├── infrastructure/     # Infrastructure : fichier de configuration de l'application (.env/config.yaml/services externes/etc..)
-└── go.mod
+│   ├── infrastructure/              # Couche Infrastructure
+│   │   ├── config/                  # Gestion de la configuration (ex: fichiers .env, YAML, etc.)
+│   │   │   └── config.go            # Lecture et parsing des fichiers de configuration
+│   │   ├── database/                # Initialisation de la base de données (ex : connection pool)
+│   │   │   └── db.go                # Configuration et initialisation de la DB (ex : GORM)
+│   │   ├── server/                  # Configuration du serveur HTTP
+│   │   │   └── http_server.go       # Démarrage du serveur Gin
+│   │   └── messaging/               # Infrastructure pour la gestion des messages (ex: Kafka, RabbitMQ)
+│           └── kafka.go
+│
+├── pkg/                             # Paquets partagés entre différents contextes métier
+│   └── errors/                      # Gestion des erreurs partagées
+│       └── custom_errors.go
+│
+├── go.mod                           # Fichier des dépendances
+└── go.sum                           # Hash des versions de modules
 
 ```
 
