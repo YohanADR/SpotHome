@@ -9,7 +9,10 @@ import (
 	"github.com/YohanADR/SpotHome/infrastructure/logger"
 	"github.com/YohanADR/SpotHome/infrastructure/messaging/kafka"
 	"github.com/YohanADR/SpotHome/infrastructure/server/router"
+	"github.com/YohanADR/SpotHome/pkg/jwt"
+	"github.com/YohanADR/SpotHome/pkg/jwt/middleware"
 	"github.com/YohanADR/SpotHome/pkg/transport"
+	"github.com/gin-gonic/gin"
 )
 
 // Application struct contient les services principaux
@@ -20,6 +23,8 @@ type Application struct {
 	PostGISClient *postgis.PostGISClient
 	KafkaProducer *kafka.KafkaProducer
 	Router        *router.Router
+	HTTPHandler   transport.Transporter
+	JWTService    *jwt.JWTService
 }
 
 // InitApp initialise l'application
@@ -49,14 +54,17 @@ func InitApp() (*Application, error) {
 		return nil, err
 	}
 
+	// Initialiser le service JWT
+	jwtService := jwt.NewJWTService(log, kafkaProducer, postgisClient)
+
 	// Initialiser le transport HTTP (Gin ou un autre HTTPHandler)
-	transporter := transport.NewGinTransport(":"+cfg.Server.Port, log)
+	httpHandler := transport.NewGinTransport(":"+cfg.Server.Port, log)
 
 	// Initialiser le routeur avec le transport HTTP générique
-	appRouter := router.NewRouter(transporter, log)
+	appRouter := router.NewRouter(httpHandler, log)
 
 	// Enregistrement des routes
-	registerRoutes(appRouter)
+	registerRoutes(appRouter, jwtService)
 
 	log.Info("Application initialisée avec succès")
 
@@ -67,6 +75,8 @@ func InitApp() (*Application, error) {
 		PostGISClient: postgisClient,
 		KafkaProducer: kafkaProducer,
 		Router:        appRouter,
+		HTTPHandler:   httpHandler,
+		JWTService:    jwtService,
 	}, nil
 }
 
@@ -75,10 +85,12 @@ func handleFatalError(log logger.Logger, message string, err error) error {
 	log.Fatal(message, "error", err)
 	return err
 }
+
+// Charger la configuration
 func initConfig(path string, log logger.Logger) (*config.Config, error) {
 	cfg, err := config.LoadConfig(path, log)
-	if cfg != nil {
-		return nil, handleFatalError(log, "Erreur lors de l'initialisation de Redis", err)
+	if err != nil {
+		return nil, handleFatalError(log, "Erreur lors du chargement de la configuration", err)
 	}
 	return cfg, nil
 }
@@ -110,14 +122,49 @@ func initKafka(cfg *config.Config, log logger.Logger) (*kafka.KafkaProducer, err
 	return kafkaProducer, nil
 }
 
-// Register les routes Todo retirer pour mettre une  fonction de routing dynamique
-func registerRoutes(appRouter *router.Router) {
+// Register les routes avec possibilité d'utiliser le middleware JWT
+func registerRoutes(appRouter *router.Router, jwtService *jwt.JWTService) {
 	appRouter.RegisterRoutes(func(register transport.RegisterRoutes) {
-		// Enregistrement d'une route HTTP avec un handler générique
-		register("GET", "/health", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"message": "OK"}`))
-		})
+		// Route publique
+		register("GET", "/health", gin.HandlerFunc(func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"message": "OK"})
+		}))
+
+		// Route protégée avec le middleware JWT
+		register("GET", "/protected", gin.HandlerFunc(func(c *gin.Context) {
+			middleware.JWTMiddleware(jwtService)(c) // Appliquer le middleware
+			if c.IsAborted() {
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "Protected route access granted"})
+		}))
+
+		// Route pour générer un token
+		// Route pour générer un token
+		register("POST", "/generate-token", gin.HandlerFunc(func(c *gin.Context) {
+			// Récupérer le nom d'utilisateur à partir de la requête JSON
+			var requestBody struct {
+				Username string `json:"username"`
+			}
+
+			if err := c.ShouldBindJSON(&requestBody); err != nil || requestBody.Username == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request. Username is required."})
+				return
+			}
+
+			// Générer le token et le refresh token
+			token, refreshToken, err := jwtService.GenerateToken(requestBody.Username, 1)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+				return
+			}
+
+			// Retourner le token et le refresh token générés
+			c.JSON(http.StatusOK, gin.H{
+				"token":        token,
+				"refreshToken": refreshToken,
+			})
+		}))
 	})
 }
 

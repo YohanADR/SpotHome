@@ -1,54 +1,51 @@
 package transport
 
 import (
-	"net/http"
-
 	"github.com/YohanADR/SpotHome/infrastructure/logger"
 	"github.com/gin-gonic/gin"
 )
 
-// GinTransport structure qui utilise Gin comme moteur HTTP et implémente HTTPHandler
+// GinTransport struct pour Gin
 type GinTransport struct {
 	Engine *gin.Engine
-	Addr   string
 	Logger logger.Logger
+	Addr   string
 }
 
-// NewGinTransport crée un nouveau transport HTTP utilisant Gin
-func NewGinTransport(addr string, log logger.Logger) *GinTransport {
-	r := gin.Default()
+// RegisterRoutes est une fonction type qui prend une méthode, un chemin et un gestionnaire HTTP générique
+type RegisterRoutes func(method string, path string, handler interface{})
 
-	log.Info("Initialisation du transport avec Gin")
+// NewGinTransport initialise un nouveau GinTransport
+func NewGinTransport(addr string, log logger.Logger) *GinTransport {
+	engine := gin.Default()
 	return &GinTransport{
-		Engine: r,
-		Addr:   addr,
+		Engine: engine,
 		Logger: log,
+		Addr:   addr,
 	}
+}
+
+// RegisterRoutes implémente Transporter en utilisant RegisterRoutes
+func (g *GinTransport) RegisterRoutes(register func(RegisterRoutes)) {
+	register(func(method string, path string, handler interface{}) {
+		if h, ok := handler.(gin.HandlerFunc); ok {
+			switch method {
+			case "GET":
+				g.Engine.GET(path, h)
+			case "POST":
+				g.Engine.POST(path, h)
+			// Ajouter d'autres méthodes HTTP si nécessaire
+			default:
+				g.Logger.Error("Méthode HTTP non supportée", "method", method)
+			}
+		} else {
+			g.Logger.Error("Handler invalide pour Gin", "path", path)
+		}
+	})
 }
 
 // Start démarre le serveur Gin
 func (g *GinTransport) Start() error {
 	g.Logger.Info("Démarrage du serveur Gin", "addr", g.Addr)
 	return g.Engine.Run(g.Addr)
-}
-
-// RegisterRoutes enregistre les routes avec Gin
-func (g *GinTransport) RegisterRoutes(registerFunc func(RegisterRoutes)) {
-	// Enregistre les routes en utilisant le handler Gin
-	registerFunc(func(method, path string, handlerFunc http.HandlerFunc) {
-		switch method {
-		case "GET":
-			g.Engine.GET(path, gin.WrapF(handlerFunc))
-		case "POST":
-			g.Engine.POST(path, gin.WrapF(handlerFunc))
-		// Ajouter les autres méthodes HTTP ici
-		default:
-			g.Logger.Error("Méthode HTTP non supportée", "method", method)
-		}
-	})
-}
-
-// ServeHTTP permet à Gin de respecter l'interface HTTPHandler
-func (g *GinTransport) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	g.Engine.ServeHTTP(w, r)
 }
