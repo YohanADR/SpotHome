@@ -21,7 +21,7 @@ type RedisClient struct {
 var _ cache.Cache = (*RedisClient)(nil)
 
 // NewRedisClient initialise une connexion Redis en utilisant les configurations
-func NewRedisClient(cfg config.RedisConfig, log logger.Logger) *RedisClient {
+func NewRedisClient(cfg config.RedisConfig, log logger.Logger) (*RedisClient, error) {
 	// Initialisation du client Redis
 	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.Host + ":" + cfg.Port,
@@ -33,7 +33,7 @@ func NewRedisClient(cfg config.RedisConfig, log logger.Logger) *RedisClient {
 	_, err := client.Ping(ctx).Result()
 	if err != nil {
 		log.Fatal("Impossible de se connecter à Redis", "error", err)
-		return nil
+		return nil, err
 	}
 
 	log.Info("Connexion à Redis établie", "host", cfg.Host, "port", cfg.Port)
@@ -41,7 +41,7 @@ func NewRedisClient(cfg config.RedisConfig, log logger.Logger) *RedisClient {
 	return &RedisClient{
 		Client: client,
 		Logger: log,
-	}
+	}, nil
 }
 
 // Get récupère une valeur dans Redis (implémente Cache)

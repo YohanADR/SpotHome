@@ -33,7 +33,7 @@ func (g *GinTransport) Start() error {
 }
 
 // RegisterRoutes enregistre les routes avec Gin
-func (g *GinTransport) RegisterRoutes(registerFunc func(RouteRegistrar)) {
+func (g *GinTransport) RegisterRoutes(registerFunc func(RegisterRoutes)) {
 	// Enregistre les routes en utilisant le handler Gin
 	registerFunc(func(method, path string, handlerFunc http.HandlerFunc) {
 		switch method {

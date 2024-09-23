@@ -28,9 +28,9 @@ func InitApp() (*Application, error) {
 	log := logger.InitLogger()
 
 	// Charger la configuration
-	cfg, err := config.LoadConfig("config/config.yaml", log)
+	cfg, err := initConfig("config/config.yaml", log)
 	if err != nil {
-		return nil, handleFatalError(log, "Erreur lors du chargement de la configuration", err)
+		return nil, err
 	}
 
 	// Initialiser les services
@@ -75,12 +75,19 @@ func handleFatalError(log logger.Logger, message string, err error) error {
 	log.Fatal(message, "error", err)
 	return err
 }
+func initConfig(path string, log logger.Logger) (*config.Config, error) {
+	cfg, err := config.LoadConfig(path, log)
+	if cfg != nil {
+		return nil, handleFatalError(log, "Erreur lors de l'initialisation de Redis", err)
+	}
+	return cfg, nil
+}
 
 // Initialiser Redis
 func initRedis(cfg *config.Config, log logger.Logger) (*redis.RedisClient, error) {
-	redisClient := redis.NewRedisClient(cfg.Redis, log)
+	redisClient, err := redis.NewRedisClient(cfg.Redis, log)
 	if redisClient == nil {
-		return nil, handleFatalError(log, "Erreur lors de l'initialisation de Redis", nil)
+		return nil, handleFatalError(log, "Erreur lors de l'initialisation de Redis", err)
 	}
 	return redisClient, nil
 }
@@ -105,7 +112,7 @@ func initKafka(cfg *config.Config, log logger.Logger) (*kafka.KafkaProducer, err
 
 // Register les routes
 func registerRoutes(appRouter *router.Router) {
-	appRouter.RegisterRoutes(func(register transport.RouteRegistrar) {
+	appRouter.RegisterRoutes(func(register transport.RegisterRoutes) {
 		// Enregistrement d'une route HTTP avec un handler générique
 		register("GET", "/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)

@@ -22,7 +22,7 @@ func NewRouter(transporter transport.Transporter, log logger.Logger) *Router {
 }
 
 // RegisterRoutes permet à chaque contexte métier d'enregistrer ses routes via un HandlerFunc abstrait
-func (r *Router) RegisterRoutes(registerFunc func(transport.RouteRegistrar)) {
+func (r *Router) RegisterRoutes(registerFunc func(transport.RegisterRoutes)) {
 	// Utilise le transporteur abstrait pour enregistrer des routes avec HandlerFunc
 	r.Transporter.RegisterRoutes(registerFunc)
 }
