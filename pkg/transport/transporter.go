@@ -9,5 +9,5 @@ type RegisterRoutes func(method, path string, handler http.HandlerFunc)
 type Transporter interface {
 	http.Handler                         // Respecte l'interface http.Handler
 	Start() error                        // Méthode pour démarrer le serveur HTTP
-	RegisterRoutes(func(RegisterRoutes)) // Enregistrement des routes via un RouteRegistrar abstrait
+	RegisterRoutes(func(RegisterRoutes)) // Enregistrement des routes via un RegisterRoutes abstrait
 }
