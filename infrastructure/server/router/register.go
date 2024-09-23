@@ -26,7 +26,6 @@ func RegisterRoutes(appRouter *Router, jwtService *jwt.JWTService) {
 		}))
 
 		// Route pour générer un token
-		// Route pour générer un token
 		register("POST", "/generate-token", gin.HandlerFunc(func(c *gin.Context) {
 			// Récupérer le nom d'utilisateur à partir de la requête JSON
 			var requestBody struct {

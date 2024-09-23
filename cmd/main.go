@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/YohanADR/SpotHome/pkg/app"
+	"github.com/YohanADR/SpotHome/infrastructure/app"
 )
 
 func main() {
