@@ -110,7 +110,7 @@ func initKafka(cfg *config.Config, log logger.Logger) (*kafka.KafkaProducer, err
 	return kafkaProducer, nil
 }
 
-// Register les routes
+// Register les routes Todo retirer pour mettre une  fonction de routing dynamique
 func registerRoutes(appRouter *router.Router) {
 	appRouter.RegisterRoutes(func(register transport.RegisterRoutes) {
 		// Enregistrement d'une route HTTP avec un handler générique
