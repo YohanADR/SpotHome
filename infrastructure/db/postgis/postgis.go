@@ -54,14 +54,6 @@ func NewPostGISClient(cfg config.DatabaseConfig, log logger.Logger) (*PostGISCli
 	}, nil
 }
 
-// Connect est une méthode requise par l'interface Database mais ici elle n'est pas utilisée directement
-func (p *PostGISClient) Connect() error {
-	if p.Pool == nil {
-		return ErrClosedPool
-	}
-	return nil
-}
-
 // Query exécute une requête SQL
 func (p *PostGISClient) Query(query string, args ...interface{}) (interface{}, error) {
 	rows, err := p.Pool.Query(context.Background(), query, args...)
